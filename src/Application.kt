@@ -34,15 +34,60 @@ fun Application.module(testing: Boolean = false) {
         get("/") {
             call.respondHtml {
                 head {
-                    meta {
-                        link(
-                            href = "https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css",
-                            rel = "stylesheet"
-                        )
-                        link(href = "/styles.css", rel = "stylesheet")
-
-
+                    link(
+                        href = "https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css",
+                        rel = "stylesheet"
+                    ) {
+                        attributes["integrity"] = "ha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB"
+                        attributes["crossorigin"] = "anonymous"
                     }
+                    link(href = "/styles.css", rel = "stylesheet")
+                    meta {
+                        attributes["charset"] = "utf-8"
+                    }
+                    meta {
+                        attributes["http-equiv"] = "X-UA-Compatible"
+                        attributes["content"] = "IE=edge"
+                    }
+                    meta {
+                        attributes["format-detection"] = "X-UA-Compatible"
+                        attributes["content"] = "IE=edge"
+                    }
+                    meta(name = "format-detection", content = "telephone=no")
+                    meta(name = "viewport", content = "width=device-width")
+                    meta {
+                        attributes["property"] = "og:title"
+                        attributes["content"] = "バーチャルキャスト番組表"
+                    }
+                    meta {
+                        attributes["property"] = "og:type"
+                        attributes["content"] = "article"
+                    }
+                    meta {
+                        attributes["property"] = "og:url"
+                        attributes["content"] = "https://vcas.bootjp.me/"
+                    }
+                    meta {
+                        attributes["property"] = "og:image"
+                        attributes["content"] = "https://vcas.bootjp.me/ilust.jpg"
+                    }
+                    meta {
+                        attributes["property"] = "og:site_name"
+                        attributes["content"] = "バーチャルキャスト番組表"
+                    }
+                    meta {
+                        attributes["property"] = "og:description"
+                        attributes["content"] = "バーチャルキャストで放送中｜放送予定の番組一覧を確認できます．"
+                    }
+                    meta {
+                        attributes["property"] = "twitter:card"
+                        attributes["content"] = "summary"
+                    }
+                    meta {
+                        attributes["property"] = "twitter:site"
+                        attributes["content"] = "@bootjp"
+                    }
+                    title("バーチャルキャスト番組表")
                 }
 
                 body {
@@ -73,7 +118,14 @@ fun Application.module(testing: Boolean = false) {
                                 }
                             }
                         }
+                        div("row align-items-center footer") {
+                            ul {
+                                li {a(href = "https://twitter.com/bootjp") { + "@bootjp"}}
+                                li {a(href = "https://github.com/bootjp/virtualcast_schedule_table") { + "this site source code."}}
+                            }
+                        }
                     }
+
                 }
             }
         }
@@ -115,6 +167,16 @@ fun Application.module(testing: Boolean = false) {
                 rule(".descriptions") {
                     paddingLeft = 10.px
                     fontSize = 90.pct
+                }
+
+                rule(".footer") {
+                    marginRight = LinearDimension.auto
+                    marginLeft = LinearDimension.auto
+                    textAlign = TextAlign.center
+
+                }
+                rule("ul") {
+                    listStyleType = ListStyleType.none
                 }
             }
         }
