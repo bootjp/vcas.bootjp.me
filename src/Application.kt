@@ -8,18 +8,18 @@ import io.ktor.html.*
 import kotlinx.html.*
 import kotlinx.css.*
 import kotlinx.css.Float
+import me.bootjp.db.*
 
-import me.bootjp.db.Live
-import me.bootjp.db.Live.description
-import me.bootjp.db.Live.id
-import me.bootjp.db.Live.image
-import me.bootjp.db.Live.liveId
-import me.bootjp.db.Live.owner
-import me.bootjp.db.Live.slice
-import me.bootjp.db.Live.start
-import me.bootjp.db.Live.title
+import me.bootjp.db.Lives.description
+import me.bootjp.db.Lives.owner
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.joda.time.*
+import java.text.*
+import java.time.format.*
+import java.time.ZonedDateTime
+
+
 
 
 fun main(args: Array<String>): Unit = io.ktor.server.netty.EngineMain.main(args)
@@ -32,7 +32,6 @@ fun Application.module(testing: Boolean = false) {
 
     routing {
         get("/") {
-
             call.respondHtml {
                 head {
                     meta {
@@ -47,40 +46,32 @@ fun Application.module(testing: Boolean = false) {
                 }
 
                 body {
-                    div("container-fluid ") {
+                    div("container-fluid") {
                         p { +"今の所「バーチャルキャスト」のタグがついているニコ生のものだけを対象としています．" }
                         p { a(href = "https://twitter.com/notify_vcas") { +"新着番組通知TwitterBot" } }
                     }
 
-
-                    transaction {
-                        SchemaUtils.create (Live)
-                        Live.selectAll().forEach {
-                            div("col-md-4 live") {
-                                p { a("https://nico.ms/${it[Live.liveId]}")  {+ it[Live.title] }}
-                                img(src = it[Live.image])
-                                div {
-                                    p("descriptions") { +it[description]}
-                                }
-                                div("clear")
-                                p {+ it[owner]}
-                            }
-                        }
+                    div("center") {
+                        h2 { +"これから始まるバーチャルキャストの番組表" }
+                        p { +"今後予定されている放送枠を直近順で表示中" }
                     }
-                }
-            }
-        }
-
-        get("/html-dsl") {
-            call.respondHtml {
-//                meta {
-//
-//                }
-                body {
-                    h1 { +"HTML" }
-                    ul {
-                        for (n in 1..10) {
-                            li { +"$n" }
+                    div("row") {
+                        transaction {
+                            SchemaUtils.create(Lives)
+                            Live.find {
+                                Lives.start greater DateTime.now()
+                            }.forEach {
+                                    div("col-md-4 live") {
+                                    p { a("https://nico.ms/${it.liveId}") { +it.title } }
+                                    p { + it.start.toString( "yyyy年MM月dd日 HH:mm〜") }
+                                    img(src = it.image)
+                                    div("descriptions") {
+                                        p { +it.description }
+                                    }
+                                    div("clear")
+                                    p { +it.owner }
+                                }
+                            }
                         }
                     }
                 }
@@ -89,28 +80,22 @@ fun Application.module(testing: Boolean = false) {
 
         get("/styles.css") {
             call.respondCss {
-
                 rule(".container-fluid"){
                     paddingRight = 15.px
                     paddingLeft = 15.px
                     marginRight = LinearDimension.auto
                     marginLeft = LinearDimension.auto
-
-
                 }
                 rule("img") {
                     backgroundColor = Color("aliceblue")
                     width = 100.px
                     height = 100.px
                 }
-//                                object-fit: contain;
                 rule(".day") {
                     position = Position.relative
                     width =100.pct
                     marginLeft = 20.px
                 }
-
-
                 rule(".live") {
                     backgroundColor = Color("aliceblue")
                     paddingRight = 15.px
@@ -124,11 +109,13 @@ fun Application.module(testing: Boolean = false) {
                 rule(".clear") {
                     clear = Clear.both
                 }
+                rule(".center") {
+                    textAlign = TextAlign.center
+                }
                 rule(".descriptions") {
                     paddingLeft = 10.px
                     fontSize = 90.pct
                 }
-
             }
         }
     }
@@ -137,7 +124,6 @@ fun Application.module(testing: Boolean = false) {
 private operator fun ResultRow.get(title: String): String {
     return title
 }
-
 
 fun FlowOrMetaDataContent.styleCss(builder: CSSBuilder.() -> Unit) {
     style(type = ContentType.Text.CSS.toString()) {
