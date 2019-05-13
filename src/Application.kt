@@ -96,13 +96,38 @@ fun Application.module(testing: Boolean = false) {
                         p { a(href = "https://twitter.com/notify_vcas") { +"新着番組通知TwitterBot" } }
                     }
 
-                    div("center") {
-                        h2 { +"これから始まるバーチャルキャストの番組表" }
-                        p { +"今後予定されている放送枠を直近順で表示中" }
-                    }
+
                     div("row") {
                         transaction {
                             SchemaUtils.create(Lives)
+                            val onAir = Live.find {
+                                Lives.start greater DateTime.now() and
+                                        (Lives.start lessEq DateTime.now().minusMinutes(30))
+                            }.toList()
+
+                            if (onAir.count() > 0) {
+                                div("center") {
+                                    h2 { +"放送中の予約枠" }
+                                    p { +"予約時刻から30分以内のもの" }
+                                }
+                                onAir.forEach {
+                                    div("col-md-4 live") {
+                                        p { a("https://nico.ms/${it.liveId}") { +it.title } }
+                                        p { + it.start.toString( "yyyy年MM月dd日 HH:mm〜") }
+                                        img(src = it.image)
+                                        div("descriptions") {
+                                            p { +it.description }
+                                        }
+                                        div("clear")
+                                        p { +it.owner }
+                                    }
+                                }
+                            }
+
+                            div("center") {
+                                h2 { +"これから始まるバーチャルキャストの番組表" }
+                                p { +"今後予定されている放送枠を直近順で表示中" }
+                            }
                             Live.find {
                                 Lives.start greater DateTime.now()
                             }.forEach {
